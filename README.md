@@ -1,121 +1,106 @@
-Понял. Без лишнего.
-
-Ниже чистый README, нормальный рабочий вариант. `verify.sh` оставлен как опциональный инструмент проверки, но не обязателен.
-
----
-
 ````md
-# DEPLOY n8n STACK (scp + ssh, без git)
+# README
 
-Развёртывание n8n + Traefik + Qdrant + RSSHub на ВМ.
-
----
-
-## ОБЩАЯ ЛОГИКА
-
-1. Локально генерируются env-файлы
-2. env копируется на ВМ
-3. bootstrap.sh запускается на ВМ
-4. сервисы поднимаются
-
-## 2. ЧТО ДОЛЖНО БЫТЬ У ТЕБЯ ЛОКАЛЬНО
-
-Файлы:
-
-* bootstrap.sh
-* docker-compose.yml
-* папка envs/
-
----
-
-## 3. КОПИРОВАНИЕ НА ВМ
-
-Создать папку на ВМ:
+## 1. Перейти в локальную папку
 
 ```bash
-ssh user@IP "mkdir -p ~/stack-deploy"
-```
+cd ~/CloudWorkshop
+````
 
-Скопировать файлы:
-
-```bash
-scp bootstrap.sh docker-compose.yml user@IP:~/stack-deploy/
-scp envs/userN.env user@IP:~/stack-deploy/.env
-```
-
----
-
-## 4. РАБОТА НА ВМ
-
-Подключиться:
+## 2. Проверить, что файлы на месте
 
 ```bash
-ssh user@IP
+ls
+ls envs
 ```
 
-Перейти:
+## 3. Создать папку на ВМ
+
+```bash
+ssh user@IP_ВМ "mkdir -p ~/stack-deploy"
+```
+
+## 4. Скопировать файлы на ВМ
+
+```bash
+scp bootstrap.sh docker-compose.yml verify.sh user@IP_ВМ:~/stack-deploy/
+scp envs/userN.env user@IP_ВМ:~/stack-deploy/.env
+```
+
+## 5. Подключиться к ВМ
+
+```bash
+ssh user@IP_ВМ
+```
+
+## 6. Перейти в рабочую папку
 
 ```bash
 cd ~/stack-deploy
 ```
 
-Сделать скрипт исполняемым:
+## 7. Проверить env
+
+```bash
+cat .env
+```
+
+## 8. Сделать скрипты исполняемыми
 
 ```bash
 chmod +x bootstrap.sh
+chmod +x verify.sh
 ```
 
-Запустить:
+## 9. Запустить установку
 
 ```bash
 sudo bash bootstrap.sh
 ```
 
----
+## 10. Запустить проверку
 
-## 5. ПРОВЕРКА
+```bash
+sudo bash verify.sh
+```
 
-Проверить HTTP:
+## 11. Проверить HTTP
 
 ```bash
 curl -I http://userN.iamesin.ru
 ```
 
-Проверить HTTPS:
+## 12. Проверить HTTPS
 
 ```bash
 curl -I https://userN.iamesin.ru
 ```
 
-Открыть в браузере:
+## 13. Открыть в браузере
 
-```
+```text
 https://userN.iamesin.ru
 ```
 
----
-
-## 6. ДОПОЛНИТЕЛЬНЫЕ ПРОВЕРКИ (ЕСЛИ ЧТО-ТО НЕ РАБОТАЕТ)
-
-Контейнеры:
+## 14. Если нужно посмотреть контейнеры
 
 ```bash
 sudo docker ps
 ```
 
-Логи Traefik:
+## 15. Если нужно посмотреть логи traefik
 
 ```bash
 sudo docker logs traefik
 ```
 
-Логи n8n:
+## 16. Если нужно посмотреть логи n8n
 
 ```bash
 sudo docker logs n8n
 ```
 
-Проверка сервисов изнутри:
+## 17. Если нужно проверить qdrant и rsshub изнутри n8n
 
 ```bash
 sudo docker exec -it n8n sh
@@ -126,81 +111,20 @@ wget -qO- http://qdrant:6333/healthz
 wget -qO- http://rsshub:1200/
 ```
 
----
-
-## 7. ПРО verify.sh
-
-verify.sh не обязателен.
-
-Он нужен только чтобы одной командой проверить:
-
-* контейнеры
-* HTTP
-* HTTPS
-* доступность qdrant/rsshub
-
-Если не хочешь — не используй. Все проверки выше можно выполнять вручную.
-
----
-
-## 8. ДЕПЛОЙ СЛЕДУЮЩЕЙ ВМ
+## 18. Для следующей ВМ повторить
 
 ```bash
-scp bootstrap.sh docker-compose.yml user@IP:~/stack-deploy/
-scp envs/userN.env user@IP:~/stack-deploy/.env
-
-ssh user@IP
+cd ~/CloudWorkshop
+ssh user@IP_СЛЕДУЮЩЕЙ_ВМ "mkdir -p ~/stack-deploy"
+scp bootstrap.sh docker-compose.yml verify.sh user@IP_СЛЕДУЮЩЕЙ_ВМ:~/stack-deploy/
+scp envs/userM.env user@IP_СЛЕДУЮЩЕЙ_ВМ:~/stack-deploy/.env
+ssh user@IP_СЛЕДУЮЩЕЙ_ВМ
 cd ~/stack-deploy
 chmod +x bootstrap.sh
+chmod +x verify.sh
 sudo bash bootstrap.sh
+sudo bash verify.sh
 ```
 
----
-
-## 9. ЧТО МЕНЯЕТСЯ
-
-Уникально для каждой ВМ:
-
-* DOMAIN
-* N8N_ENCRYPTION_KEY
-* QDRANT_API_KEY
-
----
-
-## 10. ЧТО ОБЩЕЕ
-
-* bootstrap.sh
-* docker-compose.yml
-* LETSENCRYPT_EMAIL
-* TZ
-
----
-
-## 11. ТИПОВЫЕ ПРОБЛЕМЫ
-
-n8n permission denied:
-
-```bash
-sudo chown -R 1000:1000 /opt/user1-stack/n8n_data
 ```
-
-DNS:
-
-```bash
-dig +short A userN.iamesin.ru
-```
-
-SSL не сразу:
-
-подождать несколько минут
-
----
-
-## ГОТОВО
-
-```
-
----
-
-Если дальше — могу дать один файл, который будет деплоить все 20 ВМ подряд без ручных ssh/scp.
 ```
