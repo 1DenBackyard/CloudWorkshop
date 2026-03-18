@@ -29,14 +29,14 @@ services:
       - backend
 
   n8n:
-    image: n8nio/n8n:2.13.0
+    image: ${N8N_IMAGE}
     container_name: n8n
     restart: unless-stopped
     environment:
-      - N8N_HOST=${DOMAIN}
+      - N8N_HOST=${DOMAIN_N8N}
       - N8N_PORT=5678
       - N8N_PROTOCOL=https
-      - WEBHOOK_URL=https://${DOMAIN}/
+      - WEBHOOK_URL=https://${DOMAIN_N8N}/
       - N8N_PROXY_HOPS=1
       - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
       - GENERIC_TIMEZONE=${TZ}
@@ -49,10 +49,12 @@ services:
       - rsshub
     labels:
       - traefik.enable=true
-      - traefik.http.routers.n8n.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.n8n.rule=Host(`${DOMAIN_N8N}`)
       - traefik.http.routers.n8n.entrypoints=web,websecure
       - traefik.http.routers.n8n.tls=true
       - traefik.http.routers.n8n.tls.certresolver=le
+      - traefik.http.routers.n8n.tls.domains[0].main=${DOMAIN_N8N}
+      - traefik.http.routers.n8n.tls.domains[0].sans=${DOMAIN_QDRANT},${DOMAIN_RSSHUB}
       - traefik.http.services.n8n.loadbalancer.server.port=5678
     networks:
       - edge
@@ -62,11 +64,16 @@ services:
     image: qdrant/qdrant:latest
     container_name: qdrant
     restart: unless-stopped
-    environment:
-      - QDRANT__SERVICE__API_KEY=${QDRANT_API_KEY}
     volumes:
       - ./qdrant_data:/qdrant/storage
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.qdrant.rule=Host(`${DOMAIN_QDRANT}`)
+      - traefik.http.routers.qdrant.entrypoints=web,websecure
+      - traefik.http.routers.qdrant.tls=true
+      - traefik.http.services.qdrant.loadbalancer.server.port=6333
     networks:
+      - edge
       - backend
 
   rsshub:
@@ -76,7 +83,14 @@ services:
     environment:
       - PORT=1200
       - LISTEN_INADDR_ANY=1
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.rsshub.rule=Host(`${DOMAIN_RSSHUB}`)
+      - traefik.http.routers.rsshub.entrypoints=web,websecure
+      - traefik.http.routers.rsshub.tls=true
+      - traefik.http.services.rsshub.loadbalancer.server.port=1200
     networks:
+      - edge
       - backend
 
 networks:

@@ -1,3 +1,7 @@
+# README для деплоя
+
+Ниже готовый текст.
+
 ````md
 # README
 
@@ -7,7 +11,7 @@
 cd ~/CloudWorkshop
 ````
 
-## 2. Проверить, что файлы на месте
+## 2. Проверить файлы
 
 ```bash
 ls
@@ -22,6 +26,9 @@ ssh user@IP_ВМ "mkdir -p ~/stack-deploy"
 
 ## 4. Скопировать файлы на ВМ
 
+Поменять user - на логин, ip ВМ - на ip ВМ актуальный, envs/userN - N поменять на цифру пользователя которого создаете
+
+Например scp envs/user2.env user2@176.xxx.xxx.178:~/stack-deploy/.env
 ```bash
 scp bootstrap.sh docker-compose.yml verify.sh user@IP_ВМ:~/stack-deploy/
 scp envs/userN.env user@IP_ВМ:~/stack-deploy/.env
@@ -33,7 +40,7 @@ scp envs/userN.env user@IP_ВМ:~/stack-deploy/.env
 ssh user@IP_ВМ
 ```
 
-## 6. Перейти в рабочую папку
+## 6. Перейти в папку
 
 ```bash
 cd ~/stack-deploy
@@ -64,22 +71,40 @@ sudo bash bootstrap.sh
 sudo bash verify.sh
 ```
 
-## 11. Проверить HTTP
+## 11. Проверить DNS
 
 ```bash
-curl -I http://userN.iamesin.ru
+dig +short userN.workshop-cloud.ru
+dig +short qdrant.userN.workshop-cloud.ru
+dig +short rsshub.userN.workshop-cloud.ru
 ```
 
 ## 12. Проверить HTTPS
 
 ```bash
-curl -I https://userN.iamesin.ru
+curl -I https://user2.workshop-cloud.ru
+curl -I https://qdrant.user2.workshop-cloud.ru
+curl -I https://rsshub.user2.workshop-cloud.ru
 ```
 
 ## 13. Открыть в браузере
 
+n8n:
+
 ```text
-https://userN.iamesin.ru
+https://userN.workshop-cloud.ru
+```
+
+qdrant:
+
+```text
+https://qdrant.userN.workshop-cloud.ru
+```
+
+rsshub:
+
+```text
+https://rsshub.userN.workshop-cloud.ru
 ```
 
 ## 14. Если нужно посмотреть контейнеры
@@ -88,7 +113,7 @@ https://userN.iamesin.ru
 sudo docker ps
 ```
 
-## 15. Если нужно посмотреть логи traefik
+## 15. Если нужно посмотреть логи Traefik
 
 ```bash
 sudo docker logs traefik
@@ -100,18 +125,7 @@ sudo docker logs traefik
 sudo docker logs n8n
 ```
 
-## 17. Если нужно проверить qdrant и rsshub изнутри n8n
-
-```bash
-sudo docker exec -it n8n sh
-```
-
-```bash
-wget -qO- http://qdrant:6333/healthz
-wget -qO- http://rsshub:1200/
-```
-
-## 18. Для следующей ВМ повторить
+## 17. Для следующей ВМ повторить
 
 ```bash
 cd ~/CloudWorkshop
@@ -126,5 +140,4 @@ sudo bash bootstrap.sh
 sudo bash verify.sh
 ```
 
-```
 ```
